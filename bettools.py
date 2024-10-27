@@ -10,6 +10,8 @@ def generate_seasons(start_year, end_year):
         start = str(year)[-2:]
         end = str(year + 1)[-2:]
         seasons.append(start + end)
+
+    print(f"seasons are {seasons}")
     return seasons
 
 
@@ -78,6 +80,8 @@ def get_data(season_list, league_list, additional_cols=[]):
 
             df = df[col_list]
             df_ls.append(df)
+    print("data generated")
+
     return df_ls
 
 
@@ -105,55 +109,56 @@ def calculate_poisson_match_outcomes(home_goals_expectation, away_goals_expectat
     return [home_win_prob, draw_prob, away_win_prob]
 
 
-def calculate_ev_from_odds(bookmaker_odds, your_probability):
+def calculate_ev_from_odds(bookmaker_odds: int, your_probability: int):
     payout = bookmaker_odds
     ev = (your_probability * payout) - 1
+    print(f"probability {your_probability} payout {payout} ev {ev}")
     return ev
 
 
-def find_best_fit_goals(prob_home_win, prob_draw, prob_away_win):
-    """
-    Find the expected goals for home and away teams that best fit the given win, draw, and away win probabilities.
-    This is a simplified estimation and does not perform a complex optimization due to the complexity of the task.
-    """
-    # Initial guesses for average goals scored by home and away teams
-    avg_goals_home = 1.4
-    avg_goals_away = 1.1
+# def find_best_fit_goals(prob_home_win, prob_draw, prob_away_win):
+#     """
+#     Find the expected goals for home and away teams that best fit the given win, draw, and away win probabilities.
+#     This is a simplified estimation and does not perform a complex optimization due to the complexity of the task.
+#     """
+#     # Initial guesses for average goals scored by home and away teams
+#     avg_goals_home = 1.4
+#     avg_goals_away = 1.1
 
-    # Define a simple error function to minimize
-    def error_function(guess):
-        home, away = guess
-        # Calculate win, draw, and lose probabilities using Poisson distribution
-        max_goals = 10  # Maximum number of goals to consider for calculation
-        prob_draw_estimated = sum(
-            poisson.pmf(i, home) * poisson.pmf(i, away) for i in range(max_goals)
-        )
-        prob_home_win_estimated = sum(
-            poisson.pmf(i, home) * sum(poisson.pmf(j, away) for j in range(i))
-            for i in range(1, max_goals)
-        )
-        prob_away_win_estimated = sum(
-            poisson.pmf(i, away) * sum(poisson.pmf(j, home) for j in range(i))
-            for i in range(1, max_goals)
-        )
+#     # Define a simple error function to minimize
+#     def error_function(guess):
+#         home, away = guess
+#         # Calculate win, draw, and lose probabilities using Poisson distribution
+#         max_goals = 10  # Maximum number of goals to consider for calculation
+#         prob_draw_estimated = sum(
+#             poisson.pmf(i, home) * poisson.pmf(i, away) for i in range(max_goals)
+#         )
+#         prob_home_win_estimated = sum(
+#             poisson.pmf(i, home) * sum(poisson.pmf(j, away) for j in range(i))
+#             for i in range(1, max_goals)
+#         )
+#         prob_away_win_estimated = sum(
+#             poisson.pmf(i, away) * sum(poisson.pmf(j, home) for j in range(i))
+#             for i in range(1, max_goals)
+#         )
 
-        # Error based on the difference between estimated and actual probabilities
-        error = (
-            (prob_home_win_estimated - prob_home_win) ** 2
-            + (prob_draw_estimated - prob_draw) ** 2
-            + (prob_away_win_estimated - prob_away_win) ** 2
-        )
-        return error
+#         # Error based on the difference between estimated and actual probabilities
+#         error = (
+#             (prob_home_win_estimated - prob_home_win) ** 2
+#             + (prob_draw_estimated - prob_draw) ** 2
+#             + (prob_away_win_estimated - prob_away_win) ** 2
+#         )
+#         return error
 
-    # Use optimization to minimize the error function
-    initial_guess = [avg_goals_home, avg_goals_away]
-    result = minimize(error_function, initial_guess, bounds=((0, None), (0, None)))
+#     # Use optimization to minimize the error function
+#     initial_guess = [avg_goals_home, avg_goals_away]
+#     result = minimize(error_function, initial_guess, bounds=((0, None), (0, None)))
 
-    if result.success:
-        fitted_goals_home, fitted_goals_away = result.x
-        return fitted_goals_home, fitted_goals_away
-    else:
-        return None
+#     if result.success:
+#         fitted_goals_home, fitted_goals_away = result.x
+#         return fitted_goals_home, fitted_goals_away
+#     else:
+#         return None
 
 
 def kelly_criterion(probability, odds, bankroll, kelly_fraction=1.0):
@@ -184,69 +189,69 @@ def kelly_criterion(probability, odds, bankroll, kelly_fraction=1.0):
     return bet_amount
 
 
-def calculate_overround(odds_list):
-    """
-    This function calculates the overround from a list of odds.
-    It will return a negative number if the sum of the implied probabilities of the odds is greater than one
-    """
-    # Convert each odd in the list to implied probability
-    implied_probabilities = [1 / odd for odd in odds_list]
-    # Sum up all the implied probabilities
-    total_implied_probability = sum(implied_probabilities)
-    # Calculate overround
-    overround = (total_implied_probability - 1) * 100
-    return overround
+# def calculate_overround(odds_list):
+#     """
+#     This function calculates the overround from a list of odds.
+#     It will return a negative number if the sum of the implied probabilities of the odds is greater than one
+#     """
+#     # Convert each odd in the list to implied probability
+#     implied_probabilities = [1 / odd for odd in odds_list]
+#     # Sum up all the implied probabilities
+#     total_implied_probability = sum(implied_probabilities)
+#     # Calculate overround
+#     overround = (total_implied_probability - 1) * 100
+#     return overround
 
 
-def calculate_exchange_overround(odds_list, commission_rate):
-    """
-    This function calculates the overround from a list of odds for an exchange, adding in the comission rate.
-    The comission should be given as a decimal representation of the percentage (2% = 0.02 etc.)
-    """
-    odds_minus_comission = []
-    for odd in odds_list:
-        profit = odd - 1
-        comm_profit = profit * (1 - commission_rate)
-        revised_odd = comm_profit + 1
-        odds_minus_comission.append(revised_odd)
-    # Convert each odd in the list to implied probability
-    implied_probabilities = [1 / odd for odd in odds_minus_comission]
-    # Sum up all the adjusted implied probabilities
-    total_adjusted_implied_probability = sum(implied_probabilities)
-    # Calculate overround with commission
-    overround = (total_adjusted_implied_probability - 1) * 100
-    return overround
+# def calculate_exchange_overround(odds_list, commission_rate):
+#     """
+#     This function calculates the overround from a list of odds for an exchange, adding in the comission rate.
+#     The comission should be given as a decimal representation of the percentage (2% = 0.02 etc.)
+#     """
+#     odds_minus_comission = []
+#     for odd in odds_list:
+#         profit = odd - 1
+#         comm_profit = profit * (1 - commission_rate)
+#         revised_odd = comm_profit + 1
+#         odds_minus_comission.append(revised_odd)
+#     # Convert each odd in the list to implied probability
+#     implied_probabilities = [1 / odd for odd in odds_minus_comission]
+#     # Sum up all the adjusted implied probabilities
+#     total_adjusted_implied_probability = sum(implied_probabilities)
+#     # Calculate overround with commission
+#     overround = (total_adjusted_implied_probability - 1) * 100
+#     return overround
 
 
-def find_true_probabilities_equal(odds):
-    # Convert odds to implied probabilities
-    probabilities = [1 / o for o in odds]
-    # Calculate the total implied probability
-    total_probability = sum(probabilities)
-    # Calculate the overround
-    overround = total_probability - 1
-    # Calculate the adjustment factor for each odd
-    adjustment_factor = overround / len(odds)
-    # Adjust each implied probability
-    adjusted_probabilities = [(1 / o) - adjustment_factor for o in odds]
-    return np.array(adjusted_probabilities)
+# def find_true_probabilities_equal(odds):
+#     # Convert odds to implied probabilities
+#     probabilities = [1 / o for o in odds]
+#     # Calculate the total implied probability
+#     total_probability = sum(probabilities)
+#     # Calculate the overround
+#     overround = total_probability - 1
+#     # Calculate the adjustment factor for each odd
+#     adjustment_factor = overround / len(odds)
+#     # Adjust each implied probability
+#     adjusted_probabilities = [(1 / o) - adjustment_factor for o in odds]
+#     return np.array(adjusted_probabilities)
 
 
-def find_true_probabilities_power(odds):
-    # Convert odds to implied probabilities
-    probabilities = np.array([1 / o for o in odds])
+# def find_true_probabilities_power(odds):
+#     # Convert odds to implied probabilities
+#     probabilities = np.array([1 / o for o in odds])
 
-    # Define the objective function to minimize
-    def objective(k):
-        adj_probs = probabilities**k
-        return (1 - np.sum(adj_probs)) ** 2
+#     # Define the objective function to minimize
+#     def objective(k):
+#         adj_probs = probabilities**k
+#         return (1 - np.sum(adj_probs)) ** 2
 
-    # Initial guess for k
-    initial_k = [1.0]
-    # Bounds for k, ensuring k is not zero
-    bounds = [(0.001, None)]
-    # Minimize the objective function
-    result = minimize(objective, initial_k)
-    # Calculate the true probabilities using the optimized k
-    adjusted_true_probabilities = probabilities ** (result.x[0])
-    return adjusted_true_probabilities
+#     # Initial guess for k
+#     initial_k = [1.0]
+#     # Bounds for k, ensuring k is not zero
+#     bounds = [(0.001, None)]
+#     # Minimize the objective function
+#     result = minimize(objective, initial_k)
+#     # Calculate the true probabilities using the optimized k
+#     adjusted_true_probabilities = probabilities ** (result.x[0])
+#     return adjusted_true_probabilities

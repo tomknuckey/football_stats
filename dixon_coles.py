@@ -154,6 +154,7 @@ def solve_parameters_decay(
     constraints=[{"type": "eq", "fun": lambda x: sum(x[:20]) - 20}],
     **kwargs
 ):
+    print("starting to solve parameters")
     teams = np.sort(dataset["HomeTeam"].unique())
     # check for no weirdness in dataset
     away_teams = np.sort(dataset["AwayTeam"].unique())
@@ -264,7 +265,7 @@ def make_betting_prediction(
     params,
     home_team,
     away_team,
-    bankroll,
+    bankroll=100,
     kelly_fraction=0.05,
 ):
     predicted_probs = get_1x2_probs(
@@ -274,6 +275,8 @@ def make_betting_prediction(
     away_ev = calculate_ev_from_odds(away_odds, predicted_probs["A"])
     draw_ev = calculate_ev_from_odds(draw_odds, predicted_probs["D"])
     max_ev = max([home_ev, away_ev, draw_ev])
+
+    #Determine how much to bet and on which 
     if max_ev == home_ev:
         bet_amount = kelly_criterion(
             predicted_probs["H"], home_odds, bankroll, kelly_fraction=kelly_fraction
