@@ -70,7 +70,6 @@ def combined_prediction(
 
     params_last_2_seasons, params_this_season = params_list
 
-    print("for this season and last season")
     pred_last_2_seasons = make_betting_prediction(
         home_odds=home_odds,
         draw_odds=draw_odds,
@@ -80,7 +79,6 @@ def combined_prediction(
         away_team=away_team,
     )
 
-    print("for this season")
     pred_this_season = make_betting_prediction(
         home_odds=home_odds,
         draw_odds=draw_odds,
@@ -90,7 +88,18 @@ def combined_prediction(
         away_team=away_team,
     )
 
-    output_results(pred_last_2_seasons, pred_this_season)
+    (
+        pred_last_2_seasons_output,
+        pred_last_2_seasons_magnitude,
+        pred_this_season_output,
+        pred_this_season_magnitude,
+    ) = output_results(pred_last_2_seasons, pred_this_season)
+    return (
+        pred_last_2_seasons_output,
+        pred_last_2_seasons_magnitude,
+        pred_this_season_output,
+        pred_this_season_magnitude,
+    )
 
 
 def output_results(pred_last_2_seasons, pred_this_season) -> None:
@@ -101,27 +110,34 @@ def output_results(pred_last_2_seasons, pred_this_season) -> None:
     pred_last_2_seasons_output, pred_last_2_seasons_magnitude = pred_last_2_seasons
     pred_this_season_output, pred_this_season_magnitude = pred_this_season
 
-    # Combining the outputs
-    out = {
-        pred_last_2_seasons_output: pred_last_2_seasons_magnitude,
-        pred_this_season_output: pred_this_season_magnitude,
-    }
-    combined_output = pd.DataFrame(list(out.items()), columns=["Output", "Prediction"])
+    # # Combining the outputs
+    # out = {
+    #     pred_last_2_seasons_output: pred_last_2_seasons_magnitude,
+    #     pred_this_season_output: pred_this_season_magnitude,
+    # }
+    # combined_output = pd.DataFrame(list(out.items()), columns=["Output", "Prediction"])
 
     # Defining unique results
-    unique_results = combined_output.groupby("Output").count().shape[0]
+    # unique_results = combined_output.groupby("Output").count().shape[0]
 
-    # Outputting the results
-    if unique_results > 1:
-        print("dont bet")
-        print(
-            f"prediction is {pred_last_2_seasons_output} and {pred_this_season_output} with results of {pred_last_2_seasons_magnitude} and {pred_this_season_magnitude} for 2023 and 2024 respectively"
-        )
-    else:
-        print("can bet")
-        print(
-            f"prediction is {pred_last_2_seasons_output} with results of {pred_last_2_seasons_magnitude} and {pred_this_season_magnitude} for 2023 and 2024 respectively"
-        )
+    # # Outputting the results
+    # if unique_results > 1:
+    #     print("dont bet")
+    #     print(
+    #         f"prediction is {pred_last_2_seasons_output} and {pred_this_season_output} with results of {pred_last_2_seasons_magnitude} and {pred_this_season_magnitude} for 2023 and 2024 respectively"
+    #     )
+    # else:
+    #     print("can bet")
+    #     print(
+    #         f"prediction is {pred_last_2_seasons_output} with results of {pred_last_2_seasons_magnitude} and {pred_this_season_magnitude} for 2023 and 2024 respectively"
+    #     )
+
+    return (
+        pred_last_2_seasons_output,
+        pred_last_2_seasons_magnitude,
+        pred_this_season_output,
+        pred_this_season_magnitude,
+    )
 
 
 def predict_whole_league(df: pd.DataFrame, params_list: list[dict]) -> None:
@@ -129,14 +145,24 @@ def predict_whole_league(df: pd.DataFrame, params_list: list[dict]) -> None:
     For every game in the odds list, the prediction is generated for it and printed
     """
 
+    pred_last_2_seasons_output_list = []
+    pred_last_2_seasons_magnitude_list = []
+    pred_this_season_output_list = []
+    pred_this_season_magnitude_list = []
+
     for i in range(len(df)):
 
         # Define the home and the away team for f string use
 
-        home = df["home"][i]
-        away = df["away"][i]
-        print(f"{home} vs {away}")
-        combined_prediction(
+        # home = df["home"][i]
+        # away = df["away"][i]
+        # print(f"{home} vs {away}")
+        (
+            pred_last_2_seasons_output,
+            pred_last_2_seasons_magnitude,
+            pred_this_season_output,
+            pred_this_season_magnitude,
+        ) = combined_prediction(
             df["home_odds"][i],
             df["draw_odds"][i],
             df["away_odds"][i],
@@ -144,6 +170,18 @@ def predict_whole_league(df: pd.DataFrame, params_list: list[dict]) -> None:
             df["home"][i],
             df["away"][i],
         )
+
+        pred_last_2_seasons_output_list.append(pred_last_2_seasons_output)
+        pred_last_2_seasons_magnitude_list.append(pred_last_2_seasons_magnitude)
+        pred_this_season_output_list.append(pred_this_season_output)
+        pred_this_season_magnitude_list.append(pred_this_season_magnitude)
+
+    df["pred_last_2_seasons_output"] = pred_last_2_seasons_output_list
+    df["pred_last_2_seasons_magnitude"] = pred_last_2_seasons_magnitude_list
+    df["pred_this_season_output"] = pred_this_season_output_list
+    df["pred_this_season_magnitude"] = pred_this_season_magnitude_list
+
+    return df
 
 
 def save_data(start_year, end_year, league_list, additional_cols=[]):
@@ -214,3 +252,16 @@ def save_data(start_year, end_year, league_list, additional_cols=[]):
             df = df[col_list]
             df_ls.append(df)
     return df_ls
+
+
+def output_result_column(df):
+    df["bet_bool"] = np.where(
+        df["pred_last_2_seasons_output"] == df["pred_this_season_output"], 1, 0
+    )
+    df["average_bet_coefficient"] = (
+        df["bet_bool"]
+        * (df["pred_last_2_seasons_magnitude"] + df["pred_this_season_magnitude"])
+        * 0.5
+    )
+
+    return df

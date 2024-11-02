@@ -67,8 +67,6 @@ def get_data(
         draw_col = book + "D"
         draw_cols.append(draw_col)
 
-
-
     # For each season / league combination read in the data for the required columns
     for season in season_list:
         for league in league_list:
@@ -130,7 +128,7 @@ def calculate_ev_from_odds(bookmaker_odds: float, your_probability: float) -> fl
     """
     payout = bookmaker_odds
     ev = (your_probability * payout) - 1
-    print(f"probability {your_probability} payout {payout} ev {ev}")
+    # print(f"probability {your_probability} payout {payout} ev {ev}")
     return ev
 
 

@@ -4,7 +4,7 @@ import pandas as pd
 from config import premier_league_betting_data
 import warnings
 
-from utils.general_utils import prep_params, predict_whole_league
+from utils.general_utils import output_result_column, prep_params, predict_whole_league
 
 # Suppress RuntimeWarnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -27,4 +27,10 @@ df = pd.DataFrame(
 )
 
 
-predict_whole_league(df, combined_params)
+df_output = (
+    predict_whole_league(df, combined_params)
+    .pipe(output_result_column)
+    .sort_values("average_bet_coefficient", ascending=False)
+)
+
+df_output.to_csv("data/output/model_output.csv")
