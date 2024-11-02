@@ -3,6 +3,7 @@ from scipy.optimize import minimize
 from scipy.stats import poisson
 
 from bettools import calculate_ev_from_odds, kelly_criterion
+import pandas as pd
 
 
 def rho_correction(x, y, lambda_x, mu_y, rho):
@@ -146,7 +147,7 @@ def dc_log_like_decay(x, y, alpha_x, beta_x, alpha_y, beta_y, rho, gamma, t, xi=
 
 
 def solve_parameters_decay(
-    dataset,
+    dataset: pd.DataFrame,
     xi=0.001,
     debug=False,
     init_vals=None,
@@ -155,6 +156,8 @@ def solve_parameters_decay(
     **kwargs
 ):
     print("starting to solve parameters")
+
+    # Define the teams
     teams = np.sort(dataset["HomeTeam"].unique())
     # check for no weirdness in dataset
     away_teams = np.sort(dataset["AwayTeam"].unique())
@@ -271,12 +274,14 @@ def make_betting_prediction(
     predicted_probs = get_1x2_probs(
         dixon_coles_simulate_match(params, home_team, away_team, max_goals=10)
     )
+
+    # Predict the EVS
     home_ev = calculate_ev_from_odds(home_odds, predicted_probs["H"])
     away_ev = calculate_ev_from_odds(away_odds, predicted_probs["A"])
     draw_ev = calculate_ev_from_odds(draw_odds, predicted_probs["D"])
     max_ev = max([home_ev, away_ev, draw_ev])
 
-    #Determine how much to bet and on which 
+    # Determine how much to bet and on which
     if max_ev == home_ev:
         bet_amount = kelly_criterion(
             predicted_probs["H"], home_odds, bankroll, kelly_fraction=kelly_fraction

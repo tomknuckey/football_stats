@@ -153,3 +153,4 @@ widgetsnbextension==4.0.10
 wsproto==1.2.0
 xarray==2024.3.0
 xarray-einstats==0.7.0
+pylint

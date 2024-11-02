@@ -10,7 +10,6 @@ import warnings
 from dixon_coles import (
     make_betting_prediction,
     solve_parameters_decay,
-
 )
 
 # Suppress RuntimeWarnings
@@ -20,12 +19,13 @@ pd.set_option("display.max_columns", None)
 pd.set_option("display.width", None)
 pd.options.mode.chained_assignment = None
 
+
 def whole_thing(start_year: int, end_year: int, leagues: list[str]) -> None:
     # getting data using the bettools library
 
     season_list = generate_seasons(start_year, end_year)
 
-    df_ls = get_data(season_list, leagues[0], additional_cols=["HS", "AS", "FTR"])
+    df_ls = get_data(season_list, leagues, additional_cols=["HS", "AS", "FTR"])
 
     main_df = pd.concat(df_ls)
 
@@ -55,19 +55,17 @@ def prep_params(pdf: pd.DataFrame) -> pd.DataFrame:
 
     return pdf.set_index("team")[["output"]].to_dict()["output"]
 
+
 def combined_prediction(
-    home_odds,
-    draw_odds,
-    away_odds,
-    params_list,
-    home_team,
-    away_team,
-):
+    home_odds: float,
+    draw_odds: float,
+    away_odds: float,
+    params_list: list[dict],
+    home_team: str,
+    away_team: str,
+) -> None:
     """
     Predictions are generated for both timeframes in terms of what the result is and how much is recommended to bet on it
-    These are then combined into a dataframe where if the outputs are the same it's recommended to bet, where the amount is defined for each 
-
-
     """
 
     params_last_2_seasons, params_this_season = params_list
@@ -91,12 +89,29 @@ def combined_prediction(
         home_team=home_team,
         away_team=away_team,
     )
-    
+
+    output_results(pred_last_2_seasons, pred_this_season)
+
+
+def output_results(pred_last_2_seasons, pred_this_season) -> None:
+    """
+    The outputs are combined into a dataframe where if the outputs are the same it's recommended to bet, where the amount is defined for each
+    """
+
     pred_last_2_seasons_output, pred_last_2_seasons_magnitude = pred_last_2_seasons
     pred_this_season_output, pred_this_season_magnitude = pred_this_season
-    out = {pred_last_2_seasons_output: pred_last_2_seasons_magnitude, pred_this_season_output: pred_this_season_magnitude}
+
+    # Combining the outputs
+    out = {
+        pred_last_2_seasons_output: pred_last_2_seasons_magnitude,
+        pred_this_season_output: pred_this_season_magnitude,
+    }
     combined_output = pd.DataFrame(list(out.items()), columns=["Output", "Prediction"])
+
+    # Defining unique results
     unique_results = combined_output.groupby("Output").count().shape[0]
+
+    # Outputting the results
     if unique_results > 1:
         print("dont bet")
         print(
@@ -108,13 +123,19 @@ def combined_prediction(
             f"prediction is {pred_last_2_seasons_output} with results of {pred_last_2_seasons_magnitude} and {pred_this_season_magnitude} for 2023 and 2024 respectively"
         )
 
-def predict_whole_league(df: pd.DataFrame, params_list):
+
+def predict_whole_league(df: pd.DataFrame, params_list: list[dict]) -> None:
     """
-    For every game in the odds list the prediction is generated for it and printed
+    For every game in the odds list, the prediction is generated for it and printed
     """
 
     for i in range(len(df)):
-        print(f"{df["home"][i]} vs {df["away"][i]}")
+
+        # Define the home and the away team for f string use
+
+        home = df["home"][i]
+        away = df["away"][i]
+        print(f"{home} vs {away}")
         combined_prediction(
             df["home_odds"][i],
             df["draw_odds"][i],
@@ -123,6 +144,7 @@ def predict_whole_league(df: pd.DataFrame, params_list):
             df["home"][i],
             df["away"][i],
         )
+
 
 def save_data(start_year, end_year, league_list, additional_cols=[]):
 

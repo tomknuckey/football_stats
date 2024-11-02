@@ -4,7 +4,11 @@ from scipy.optimize import minimize
 from scipy.stats import poisson
 
 
-def generate_seasons(start_year, end_year):
+def generate_seasons(start_year: int, end_year: int) -> list[int]:
+    """
+    Based on the defined start and end year it takes all the seasons from within it.
+    EG if it's 2023, 2025 then we'll take 2324 and 2325
+    """
     seasons = []
     for year in range(start_year, end_year):
         start = str(year)[-2:]
@@ -15,8 +19,14 @@ def generate_seasons(start_year, end_year):
     return seasons
 
 
-def get_data(season_list, league_list, additional_cols=[]):
+def get_data(
+    season_list: list[int], league_list: list[str], additional_cols: list[str] = []
+) -> pd.DataFrame:
+    """
+    Scrape the data choosing the required columns for the leagues and seasons required
+    """
 
+    # Defines the columns to take
     col_list = [
         "Div",
         "Date",
@@ -32,6 +42,7 @@ def get_data(season_list, league_list, additional_cols=[]):
         "draw_max_odds",
     ]
 
+    # Adds any other columns
     for col in additional_cols:
         col_list.append(col)
 
@@ -43,6 +54,7 @@ def get_data(season_list, league_list, additional_cols=[]):
     away_cols = []
     draw_cols = []
 
+    #
     for book in bookmakers:
         home_col = book + "H"
         home_cols.append(home_col)
@@ -55,6 +67,9 @@ def get_data(season_list, league_list, additional_cols=[]):
         draw_col = book + "D"
         draw_cols.append(draw_col)
 
+
+
+    # For each season / league combination read in the data for the required columns
     for season in season_list:
         for league in league_list:
             try:
@@ -109,7 +124,10 @@ def calculate_poisson_match_outcomes(home_goals_expectation, away_goals_expectat
     return [home_win_prob, draw_prob, away_win_prob]
 
 
-def calculate_ev_from_odds(bookmaker_odds: int, your_probability: int):
+def calculate_ev_from_odds(bookmaker_odds: float, your_probability: float) -> float:
+    """
+    The estimated value (ev) is calculated from the average amount you'd win by betting 1 pound on it - this is printed and returned
+    """
     payout = bookmaker_odds
     ev = (your_probability * payout) - 1
     print(f"probability {your_probability} payout {payout} ev {ev}")
