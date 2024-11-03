@@ -1,8 +1,10 @@
 # this notebook allows you to predict football games using the Dixon-Coles algorithm
-
 import pandas as pd
-from config import premier_league_betting_data
+from impyrial.validation.general import check_any_file_modification
+from config import premier_league_betting_data, current_season
 import warnings
+from datetime import date
+
 
 from utils.general_utils import output_result_column, prep_params, predict_whole_league
 
@@ -12,6 +14,8 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 pd.set_option("display.max_columns", None)
 pd.set_option("display.width", None)
 pd.options.mode.chained_assignment = None
+
+check_any_file_modification("data/models", 7)
 
 # Reading and preparing data
 params_2023_eo = pd.read_csv(f"data\models\model20232025E0.csv").pipe(prep_params)
@@ -30,7 +34,17 @@ df = pd.DataFrame(
 df_output = (
     predict_whole_league(df, combined_params)
     .pipe(output_result_column)
-    .sort_values("average_bet_coefficient", ascending=False)
-)
+    .sort_values("average_bet_coefficient", ascending=False).round({'pred_last_2_seasons_magnitude': 2, 'pred_this_season_magnitude': 2, "average_bet_coefficient": 2}))
 
-df_output.to_csv("data/output/model_output.csv")
+
+df_output["current_season"] = current_season
+date = date.today()
+df_output["rundate"] = date
+
+df_output.to_csv(f"data/output/model_output_{date}.csv")
+
+pdf_current_output = pd.read_csv("data/output/model_output.csv", index_col=0)
+df_output = pd.concat([df_output, pdf_current_output], ignore_index=True, sort=False)
+
+df_output.drop_duplicates().to_csv("data/output/model_output.csv")
+

@@ -110,28 +110,6 @@ def output_results(pred_last_2_seasons, pred_this_season) -> None:
     pred_last_2_seasons_output, pred_last_2_seasons_magnitude = pred_last_2_seasons
     pred_this_season_output, pred_this_season_magnitude = pred_this_season
 
-    # # Combining the outputs
-    # out = {
-    #     pred_last_2_seasons_output: pred_last_2_seasons_magnitude,
-    #     pred_this_season_output: pred_this_season_magnitude,
-    # }
-    # combined_output = pd.DataFrame(list(out.items()), columns=["Output", "Prediction"])
-
-    # Defining unique results
-    # unique_results = combined_output.groupby("Output").count().shape[0]
-
-    # # Outputting the results
-    # if unique_results > 1:
-    #     print("dont bet")
-    #     print(
-    #         f"prediction is {pred_last_2_seasons_output} and {pred_this_season_output} with results of {pred_last_2_seasons_magnitude} and {pred_this_season_magnitude} for 2023 and 2024 respectively"
-    #     )
-    # else:
-    #     print("can bet")
-    #     print(
-    #         f"prediction is {pred_last_2_seasons_output} with results of {pred_last_2_seasons_magnitude} and {pred_this_season_magnitude} for 2023 and 2024 respectively"
-    #     )
-
     return (
         pred_last_2_seasons_output,
         pred_last_2_seasons_magnitude,
@@ -151,12 +129,6 @@ def predict_whole_league(df: pd.DataFrame, params_list: list[dict]) -> None:
     pred_this_season_magnitude_list = []
 
     for i in range(len(df)):
-
-        # Define the home and the away team for f string use
-
-        # home = df["home"][i]
-        # away = df["away"][i]
-        # print(f"{home} vs {away}")
         (
             pred_last_2_seasons_output,
             pred_last_2_seasons_magnitude,

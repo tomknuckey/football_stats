@@ -10,3 +10,5 @@ premier_league_betting_data = [
     ["Man United", "Chelsea", 2.7, 3.9, 2.62],
     ["Fulham", "Brentford", 2.05, 3.75, 3.75],
 ]
+
+current_season = "2425"
