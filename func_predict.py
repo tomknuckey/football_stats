@@ -6,7 +6,12 @@ import warnings
 from datetime import date
 
 
-from utils.general_utils import output_result_column, prep_params, predict_whole_league
+from utils.general_utils import (
+    get_new_features,
+    output_result_column,
+    prep_params,
+    predict_whole_league,
+)
 
 # Suppress RuntimeWarnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -34,12 +39,16 @@ df = pd.DataFrame(
 df_output = (
     predict_whole_league(df, combined_params)
     .pipe(output_result_column)
-    .sort_values("average_bet_coefficient", ascending=False).round({'pred_last_2_seasons_magnitude': 2, 'pred_this_season_magnitude': 2, "average_bet_coefficient": 2}))
+    .sort_values("average_bet_coefficient", ascending=False)
+    .round(
+        {
+            "pred_last_2_seasons_magnitude": 2,
+            "pred_this_season_magnitude": 2,
+            "average_bet_coefficient": 2,
+        }
+    )
+).pipe(get_new_features)
 
-
-df_output["current_season"] = current_season
-date = date.today()
-df_output["rundate"] = date
 
 df_output.to_csv(f"data/output/model_output_{date}.csv")
 
@@ -47,4 +56,3 @@ pdf_current_output = pd.read_csv("data/output/model_output.csv", index_col=0)
 df_output = pd.concat([df_output, pdf_current_output], ignore_index=True, sort=False)
 
 df_output.drop_duplicates().to_csv("data/output/model_output.csv")
-

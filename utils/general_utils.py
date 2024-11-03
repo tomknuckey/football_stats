@@ -1,6 +1,7 @@
 from typing import Dict
 import pandas as pd
 import numpy as np
+from datetime import date
 from scipy.stats import skellam
 from bettools import (
     get_data,
@@ -11,6 +12,8 @@ from dixon_coles import (
     make_betting_prediction,
     solve_parameters_decay,
 )
+
+from config import current_season
 
 # Suppress RuntimeWarnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
@@ -237,3 +240,14 @@ def output_result_column(df):
     )
 
     return df
+
+
+def get_new_features(pdf: pd.DataFrame) -> pd.DataFrame:
+    """
+    Add columns for current season and date to the dataframe
+    """
+    pdf["current_season"] = current_season
+    date = date.today()
+    pdf["rundate"] = date
+
+    return pdf
