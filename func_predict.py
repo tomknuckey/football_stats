@@ -47,8 +47,12 @@ df_output = (
             "average_bet_coefficient": 2,
         }
     )
-).pipe(get_new_features)
+)
 
+
+df_output["current_season"] = current_season
+date = date.today()
+df_output["rundate"] = date
 
 df_output.to_csv(f"data/output/model_output_{date}.csv")
 

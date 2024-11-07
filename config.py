@@ -1,14 +1,14 @@
 premier_league_betting_data = [
-    ["Newcastle", "Arsenal", 3.9, 3.75, 2.05],
-    ["Southampton", "Everton", 2.71, 3.6, 2.75],
-    ["Ipswich", "Leicester", 2.3, 3.6, 3.25],
-    ["Bournemouth", "Man City", 5.6, 4.5, 1.62],
-    ["Nott'm Forest", "West Ham", 2.2, 3.6, 3.6],
-    ["Liverpool", "Brighton", 1.4, 5.6, 8],
-    ["Wolves", "Crystal Palace", 2.6, 3.5, 3],
-    ["Tottenham", "Aston Villa", 1.95, 4.1, 3.75],
-    ["Man United", "Chelsea", 2.7, 3.9, 2.62],
-    ["Fulham", "Brentford", 2.05, 3.75, 3.75],
+    ["Wolves", "Southampton", 2, 3.8, 3.8],
+    ["Brentford", "Bournemouth", 2.55, 3.65, 2.8],
+    ["Crystal Palace", "Fulham", 2.7, 3.6, 2.75],
+    ["West Ham", "Everton", 2.2, 3.5, 3.5],
+    ["Brighton", "Man City" , 4.4, 4.2, 1.77],
+    ["Liverpool", "Aston Villa" , 1.48, 5.2, 6.5],
+    ["Man United", "Leicester", 1.4, 6, 7.5],
+    ["Nott'm Forest", "Newcastle" , 2.8, 3.4, 2.63],
+    ["Tottenham", "Ipswich", 1.29, 7, 11],
+    ["Chelsea", "Arsenal", 2.88, 3.6, 2.5],
 ]
 
 current_season = "2425"
